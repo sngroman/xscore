@@ -1,0 +1,17 @@
+spring:
+  application:
+    name: xscore
+  datasource:
+    url: jdbc:mysql://localhost/xscore #hostname should be changed
+    driver-class-name: com.mysql.jdbc.Driver
+    username: root
+    password: xscore
+    type: com.zaxxer.hikari.HikariDataSource
+    hikari:
+      maximum-pool-size: 2
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        default_schema: xscore

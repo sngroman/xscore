@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/src/main/main.iml" filepath="$PROJECT_DIR$/src/main/main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/sg.com.fairprice.fpon.xscore.iml" filepath="$PROJECT_DIR$/.idea/modules/sg.com.fairprice.fpon.xscore.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/sg.com.fairprice.fpon.xscore.main.iml" filepath="$PROJECT_DIR$/.idea/modules/sg.com.fairprice.fpon.xscore.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/sg.com.fairprice.fpon.xscore.test.iml" filepath="$PROJECT_DIR$/.idea/modules/sg.com.fairprice.fpon.xscore.test.iml" />
+      <module fileurl="file://$PROJECT_DIR$/src/test/test.iml" filepath="$PROJECT_DIR$/src/test/test.iml" />
+    </modules>
+  </component>
+</project>
