@@ -2,7 +2,7 @@ spring:
   application:
     name: xscore
   datasource:
-    url: jdbc:mysql://localhost/xscore #hostname should be changed
+    url: jdbc:mysql://xscore-db:3306/xscore #hostname should be changed
     driver-class-name: com.mysql.jdbc.Driver
     username: root
     password: xscore
