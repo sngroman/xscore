@@ -24,15 +24,15 @@ services:
 
   app:
     restart: always
-    build: ./app
+    image: gradle
     working_dir: /app
     volumes:
       - ./app:/app
     ports:
-      - '8080:8080'
+      - '13301:8080'
     expose:
-      - '8080'
-    command: java -jar /app/build/libs/xscore-0.0.1-SNAPSHOT.jar
+      - '13301'
+    command: bash -c "sleep 10 && gradle bootRun"
     depends_on:
       - xscore-db
     links:

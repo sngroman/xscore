@@ -6,5 +6,5 @@ ADD /build/libs/xscore*.jar /app/FP-score.jar
 
 CMD ["java", "-Xmx256m", "-jar", "/app/FP-xscore.jar"]
 
-EXPOSE 8080
+EXPOSE 13301
 
