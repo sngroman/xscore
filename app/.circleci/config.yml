@@ -1,0 +1,51 @@
+version: 2
+jobs:
+  build:
+    docker:
+      - image: circleci/openjdk:8
+    working_directory: ~/app
+    steps:
+      - checkout
+      - add_ssh_keys
+      - run:
+          name: mysql install
+          command: |
+            curl -sS https://downloads.mariadb.com/MariaDB/mariadb_repo_setup | sudo bash
+            sudo apt-get update
+            sudo apt-get install mariadb-server
+            sudo service mysql start
+            sudo mysql -e "create user 'xscore'@'localhost' identified by 'xscore'"
+            sudo mysql -e "GRANT ALL PRIVILEGES ON * . * TO 'xscore'@'localhost'"
+            sudo mysql -e "FLUSH PRIVILEGES"
+      - setup_remote_docker
+      - run:
+          name: Build and Push Image
+          command: |
+            ./gradlew clean bootJar
+            if [ "${CIRCLE_BRANCH}" == "development" ] || [ "${CIRCLE_BRANCH}" == "master" ]; then
+              curl https://dl.google.com/dl/cloudsdk/release/google-cloud-sdk.tar.gz > /tmp/google-cloud-sdk.tar.gz
+              sudo tar -C /opt -xf /tmp/google-cloud-sdk.tar.gz
+              echo ${GCLOUD_SERVICE_KEY} | base64 --decode --ignore-garbage > ${HOME}/gcloud-service-key.json
+              sudo /opt/google-cloud-sdk/bin/gcloud --quiet components update kubectl
+              sudo /opt/google-cloud-sdk/bin/gcloud auth activate-service-account --key-file ${HOME}/gcloud-service-key.json
+              sudo /opt/google-cloud-sdk/bin/gcloud config set project ${GOOGLE_PROJECT_ID}
+              sudo /opt/google-cloud-sdk/bin/gcloud --quiet config set compute/zone asia-south1-b
+              docker login -u _json_key --password-stdin https://gcr.io < ${HOME}/gcloud-service-key.json
+              docker build -t gcr.io/${GOOGLE_PROJECT_ID}/${CIRCLE_PROJECT_REPONAME}:${CIRCLE_SHA1} .
+              docker push gcr.io/${GOOGLE_PROJECT_ID}/${CIRCLE_PROJECT_REPONAME}:${CIRCLE_SHA1}
+            fi
+      - deploy:
+          name: Deploy Application
+          command: |
+            if [ "${CIRCLE_BRANCH}" == "development" ]; then
+              ip=$(curl ipinfo.io/ip)
+              sudo /opt/google-cloud-sdk/bin/gcloud container clusters get-credentials staging-cluster --zone asia-south1-c
+              sudo /opt/google-cloud-sdk/bin/gcloud beta container clusters update staging-cluster --zone asia-south1-c --enable-master-authorized-networks --master-authorized-networks $ip/32
+              sudo /opt/google-cloud-sdk/bin/kubectl set image deployment/${CIRCLE_PROJECT_REPONAME} ${CIRCLE_PROJECT_REPONAME}=gcr.io/${GOOGLE_PROJECT_ID}/${CIRCLE_PROJECT_REPONAME}:${CIRCLE_SHA1}
+            fi
+            if [ "${CIRCLE_BRANCH}" == "master" ]; then
+              ip=$(curl ipinfo.io/ip)
+              sudo /opt/google-cloud-sdk/bin/gcloud container clusters get-credentials ${PRODUCTION_CLUSTER}
+              sudo /opt/google-cloud-sdk/bin/gcloud beta container clusters update ${PRODUCTION_CLUSTER} --enable-master-authorized-networks --master-authorized-networks $ip/32
+              sudo /opt/google-cloud-sdk/bin/kubectl set image deployment/${CIRCLE_PROJECT_REPONAME} ${CIRCLE_PROJECT_REPONAME}=gcr.io/${GOOGLE_PROJECT_ID}/${CIRCLE_PROJECT_REPONAME}:${CIRCLE_SHA1}
+            fi
